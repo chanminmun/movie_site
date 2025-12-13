@@ -1,0 +1,110 @@
+{% load static %}
+{% load socialaccount %} 
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CineWorld</title>
+
+    <link href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="{% static 'assets/css/animate.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/css/flex-slider.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/css/fontawesome.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/css/owl.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/css/templatemo-cyborg-gaming.css' %}">
+</head>
+
+<body>
+<header class="header-area header-sticky">
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <nav class="main-nav">
+                <!-- ***** Logo Start ***** -->
+                <a href="{% url 'index' %}" class="logo">
+                    <img src="{% static 'assets/images/logo.png' %}" alt="CineWorld Logo">
+                </a>
+                <!-- ***** Logo End ***** -->
+
+                <!-- ***** Search Start ***** -->
+                <div class="search-input">
+                    <form id="search" action="{% url 'search' %}" method="get">
+                        <input type="text" placeholder="Search Movies..." id="searchText" name="searchKeyword"/>
+                        <button type="submit" style="background:none;border:none;outline:none;">
+                            <i class="fa fa-search"></i>
+                        </button>
+                        </form>
+                </div>
+                <!-- ***** Search End ***** -->
+
+                <!-- ***** Menu Start ***** -->
+                {% with url_name=request.resolver_match.url_name %}
+                <ul class="nav">
+                    <!-- Home -->
+                    <li>
+                        <a href="{% url 'index' %}"
+                           class="{% if url_name == 'index' %}active{% endif %}">
+                            Home
+                        </a>
+                    </li>
+
+                    <!-- Movies (예: browse 뷰) -->
+                    <li>
+                        <a href="{% url 'browse' %}"
+                           class="{% if url_name == 'browse' %}active{% endif %}">
+                            Movies
+                        </a>
+                    </li>
+
+                    <!-- Movie Details (리스트 + 디테일 둘 다 켜지게) -->
+                    <li>
+                        <a href="{% url 'movie_list' %}"
+                           class="{% if url_name == 'movie_list' or url_name == 'movie_detail' %}active{% endif %}">
+                            Movie Details
+                        </a>
+                    </li>
+
+                    <!-- Guess -->
+                    <li>
+                        <a href="{% url 'guess' %}"
+                           class="{% if url_name == 'guess' %}active{% endif %}">
+                            Guess
+                        </a>
+                    </li>
+
+                    <!-- 로그인 상태에 따라 메뉴 표시 -->
+                    {% if user.is_authenticated %}
+                        <li>
+                            <a href="{% url 'streams' %}"
+                               class="{% if url_name == 'streams' %}active{% endif %}">
+                                👤 {{ user.username }}
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{% url 'account_logout' %}">Logout</a>
+                        </li>
+                    {% else %}
+                        <li>
+                            <a href="{% url 'account_login' %}"
+                               class="{% if url_name == 'account_login' %}active{% endif %}">
+                                Login
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+                {% endwith %}
+
+                <a class='menu-trigger'>
+                    <span>Menu</span>
+                </a>
+                <!-- ***** Menu End ***** -->
+            </nav>
+        </div>
+    </div>
+</div>
+</header>
+

@@ -1,0 +1,155 @@
+{% load static %}
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>영화 – 박스오피스/최신/평점 정렬</title>
+
+  <!-- Vendor / Theme CSS -->
+  <link rel="stylesheet" href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}">
+  <link rel="stylesheet" href="{% static 'assets/css/fontawesome.css' %}">
+  <link rel="stylesheet" href="{% static 'assets/css/owl.css' %}">
+  <link rel="stylesheet" href="{% static 'assets/css/templatemo-cyborg-gaming.css' %}">
+  <link rel="stylesheet" href="{% static 'assets/css/style.css' %}">
+
+  <style>
+    /* 헤더 겹침 방지 */
+    .header-area.header-sticky { top: 0; z-index: 1030; }
+    .header-spacer { height: var(--header-h, 72px); }
+
+
+    /* 카드/포스터 */
+    .movie-item .poster {
+      border-radius: 14px;
+      width: 100%;
+      aspect-ratio: 2/3;     /* 현대 브라우저 지원 */
+      object-fit: cover;
+      background: #111;
+    }
+    .movie-item .title { margin-top: .5rem; font-weight: 600; }
+
+    /* 텍스트 오버플로우 보호 */
+    .text-truncate-1 { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .line-clamp-3 {
+      display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+    }
+
+    /* 정렬 버튼 */
+    .sort-pills .btn { min-width: 108px; }
+  </style>
+</head>
+<body>
+
+{% include 'header.html' %}
+
+<!-- 헤더와 본문 사이 고정 spacer: 헤더 높이만큼 빈 공간 확보 -->
+<div class="header-spacer"></div>
+
+<div class="container">
+  <div class="row">
+    <div class="col-lg-12">
+      <div class="page-content">
+
+        <!-- ====== 리스트 헤더 + 정렬 ====== -->
+        <div class="most-popular">
+          <div class="row">
+            <div class="col-lg-12">
+              <div class="heading-section d-flex align-items-center justify-content-between flex-wrap gap-2">
+                <div class="d-flex align-items-center gap-2">
+                  <h4 class="mb-0"><em>영화</em> 리스트</h4>
+                  <small class="text-muted">
+                
+                  </small>
+                </div>
+
+                <!-- 정렬 선택: 링크로 확실하게 GET 파라미터 전달 -->
+                <div class="sort-pills d-flex align-items-center gap-2">
+                  <a href="?sort=boxoffice"
+                     class="btn btn-sm {% if request.GET.sort == 'boxoffice' or not request.GET.sort %}btn-warning text-dark{% else %}btn-outline-secondary{% endif %}">
+                    🔥 박스오피스
+                  </a>
+                  <a href="?sort=recent"
+                     class="btn btn-sm {% if request.GET.sort == 'recent' %}btn-warning text-dark{% else %}btn-outline-secondary{% endif %}">
+                    🆕 최신개봉
+                  </a>
+                  <a href="?sort=rating"
+                     class="btn btn-sm {% if request.GET.sort == 'rating' %}btn-warning text-dark{% else %}btn-outline-secondary{% endif %}">
+                    ⭐ 평점높은순
+                  </a>
+                </div>
+
+                
+              </div>
+
+              <!-- ====== 카드 그리드 ====== -->
+              <div class="row mt-3">
+                {% if movies %}
+                  {% for m in movies %}
+                    <div class="col-lg-3 col-sm-6 mb-4">
+                      <a class="text-decoration-none text-light"
+                         href="{% if m.id %}{% url 'movie_detail' tmdb_id=m.id %}{% else %}#{% endif %}">
+                        <div class="item movie-item shadow-sm rounded-4 p-2 h-100 position-relative">
+                          {% if m.rank %}
+                            <span class="badge bg-warning text-dark position-absolute" style="top:.5rem; left:.5rem;">#{{ m.rank }}</span>
+                          {% endif %}
+
+                          <img
+                            src="{{ m.poster_url|default:'/static/assets/images/default-movie.jpg' }}"
+                            alt="{{ m.title }}"
+                            class="poster"
+                            loading="lazy"
+                            
+                          >
+
+                          <h4 class="title text-truncate-1" title="{{ m.title }}">{{ m.title }}</h4>
+
+                          <div class="text-muted small">
+                            {% if m.release_date %}개봉: {{ m.release_date }}{% else %}-{% endif %}
+                            · ⭐ {{ m.vote|default:"0.0" }}
+                          </div>
+
+                          {% if m.overview %}
+                            <p class="small text-muted mt-2 mb-0 line-clamp-3">{{ m.overview }}</p>
+                          {% endif %}
+                        </div>
+                      </a>
+                    </div>
+                  {% endfor %}
+                {% else %}
+                  <div class="col-12">
+                    <div class="alert alert-secondary mb-0">
+                      표시할 영화가 없습니다. (정렬을 바꾸거나 잠시 후 다시 시도해 주세요)
+                    </div>
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /page-content -->
+    </div>
+  </div>
+</div>
+
+{% include 'footer.html' %}
+
+<!-- Scripts -->
+<script src="{% static 'vendor/jquery/jquery.min.js' %}"></script>
+<script src="{% static 'vendor/bootstrap/js/bootstrap.min.js' %}"></script>
+<script>
+  // 헤더 실제 높이를 spacer에 반영해서 겹침 방지
+  (function() {
+    const header = document.querySelector('.header-area.header-sticky');
+    const spacer = document.querySelector('.header-spacer');
+    if (header && spacer) {
+      const setH = () => spacer.style.setProperty('--header-h', header.offsetHeight + 'px');
+      setH();
+      window.addEventListener('resize', setH);
+    }
+  })();
+</script>
+</body>
+</html>

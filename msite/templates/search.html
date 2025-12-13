@@ -1,0 +1,190 @@
+{% load static %}
+{% load humanize %}
+
+{% include 'header.html' %}
+
+<div class="container">
+  <div class="row">
+    <div class="col-lg-12">
+      <div class="page-content">
+
+        <div class="most-popular">
+          <div class="row">
+            <div class="col-lg-12">
+              <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap">
+                {# --- 검색 결과 제목 --- #}
+                <div class="heading-section mb-0">
+                  {% if query %}
+                    <h4 class="mb-0">
+                      <em>"{{ query }}"</em> 검색 결과
+                      {% if movies %}
+                        <span class="text-muted small"> ({{ movies|length }}개)</span>
+                      {% endif %}
+                    </h4>
+                  {% else %}
+                    <h4 class="mb-0"><em>영화</em> 검색 결과</h4>
+                  {% endif %}
+                </div>
+
+                {# --- 정렬 버튼 오른쪽 정렬 --- #}
+                {% if movies %}
+                <div class="sort-pills d-flex align-items-center gap-2 mt-2 mt-lg-0">
+
+                  <a href="?searchKeyword={{ query|urlencode }}&sort=relevance"
+                    class="btn btn-sm {% if sort == 'relevance' %}btn-warning text-dark{% else %}btn-outline-secondary{% endif %}">
+                    🔍 연관도순
+                  </a>
+
+                  <a href="?searchKeyword={{ query|urlencode }}&sort=recent"
+                    class="btn btn-sm {% if sort == 'recent' %}btn-warning text-dark{% else %}btn-outline-secondary{% endif %}">
+                    🆕 최신개봉
+                  </a>
+
+                  <a href="?searchKeyword={{ query|urlencode }}&sort=rating"
+                    class="btn btn-sm {% if sort == 'rating' %}btn-warning text-dark{% else %}btn-outline-secondary{% endif %}">
+                    ⭐ 평점높은순
+                  </a>
+
+                </div>
+                {% endif %}
+              </div>
+              {# TMDB 에러 표시 #}
+              {% if tmdb_error %}
+                <div class="alert alert-danger small">
+                  {{ tmdb_error }}
+                </div>
+              {% endif %}
+
+              {# ---------- 결과 카드 그리드 (홈이랑 같은 스타일) ---------- #}
+              <div class="row">
+                {% if movies %}
+                  {% for movie in movies %}
+                    <div class="col-lg-3 col-sm-6 mb-4">
+
+                    {% if movie.tmdb_id %}
+                      <a class="text-decoration-none text-light"
+                        href="{% url 'movie_detail' tmdb_id=movie.tmdb_id %}">
+                        <div class="item shadow-sm rounded-lg p-2 h-100">
+
+                          <!-- 포스터 -->
+                          <img src="{{ movie.poster_url }}"
+                              alt="{{ movie.title }}"
+                              class="img-fluid rounded">
+
+                          <!-- 제목 + 개봉일 -->
+                          <h4 class="mt-2 text-truncate">
+                            {{ movie.title }}<br>
+                            {% if movie.release_date %}
+                              <span class="text-muted small">개봉일: {{ movie.release_date }}</span>
+                            {% endif %}
+                          </h4>
+
+                          <!-- ⭐ TMDB 평점 -->
+                          <p class="small mb-1 text-muted">
+                            ⭐ {{ movie.tmdb_vote|floatformat:2 }}
+                          </p>
+
+                          <!-- 줄거리: 2줄만 보여줌 -->
+                          {% if movie.overview %}
+                            <p class="small text-muted mb-2"
+                              style="-webkit-line-clamp: 2;
+                                      display: -webkit-box;
+                                      -webkit-box-orient: vertical;
+                                      overflow: hidden;">
+                              {{ movie.overview }}
+                            </p>
+                          {% endif %}
+
+                          <!-- 유저평점 상태 배지 (있을 때만) -->
+                          {% if movie.user_rating %}
+                            {% if movie.rating_status == 'fair' %}
+                              <span class="badge bg-success text-white">적절한 평가</span>
+                            {% elif movie.rating_status == 'over' %}
+                              <span class="badge bg-primary text-white">고평가</span>
+                            {% elif movie.rating_status == 'under' %}
+                              <span class="badge bg-danger text-white">저평가</span>
+                            {% endif %}
+                          {% endif %}
+
+                        </div>
+                      </a>
+
+                    {% else %}
+                      <div class="item shadow-sm rounded-lg p-2 h-100 opacity-75" style="pointer-events:none;">
+
+                        <img src="{{ movie.poster_url }}"
+                            alt="{{ movie.title }}"
+                            class="img-fluid rounded">
+
+                        <h4 class="mt-2 text-truncate">
+                          {{ movie.title }}<br>
+                          {% if movie.release_date %}
+                            <span class="text-muted small">개봉일: {{ movie.release_date }}</span>
+                          {% endif %}
+                        </h4>
+
+                        <p class="small mb-1 text-muted">
+                          ⭐ {{ movie.tmdb_vote|floatformat:2 }}
+                        </p>
+
+                        {% if movie.overview %}
+                          <p class="small text-muted mb-2"
+                            style="-webkit-line-clamp: 2;
+                                    display: -webkit-box;
+                                    -webkit-box-orient: vertical;
+                                    overflow: hidden;">
+                            {{ movie.overview }}
+                          </p>
+                        {% endif %}
+
+                        {% if movie.user_rating %}
+                          {% if movie.rating_status == 'fair' %}
+                            <span class="badge bg-success text-white">적절한 평가</span>
+                          {% elif movie.rating_status == 'over' %}
+                            <span class="badge bg-primary text-white">고평가</span>
+                          {% elif movie.rating_status == 'under' %}
+                            <span class="badge bg-danger text-white">저평가</span>
+                          {% endif %}
+                        {% endif %}
+
+                        <div class="mt-2">
+                          <span class="badge bg-secondary text-white">상세 정보 준비 중</span>
+                        </div>
+
+                      </div>
+                    {% endif %}
+
+                  </div>
+
+                  {% endfor %}
+                {% else %}
+                  <div class="col-lg-12">
+                    <p>
+                      {% if query %}
+                        “{{ query }}”에 해당하는 영화가 없습니다. 😢
+                      {% else %}
+                        검색어를 입력해주세요.
+                      {% endif %}
+                    </p>
+                  </div>
+                {% endif %}
+              </div>
+
+            </div>
+          </div>
+        </div>  {# .most-popular #}
+
+      </div>   {# .page-content #}
+    </div>
+  </div>
+</div>
+
+{% include 'footer.html' %}
+
+<script src="{% static 'vendor/jquery/jquery.min.js' %}"></script>
+<script src="{% static 'vendor/bootstrap/js/bootstrap.min.js' %}"></script>
+<script src="{% static 'assets/js/isotope.min.js' %}"></script>
+<script src="{% static 'assets/js/owl-carousel.js' %}"></script>
+<script src="{% static 'assets/js/tabs.js' %}"></script>
+<script src="{% static 'assets/js/popup.js' %}"></script>
+

@@ -1,0 +1,202 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Guess – CineWorld</title>
+
+  <link rel="stylesheet" href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}">
+  <link rel="stylesheet" href="{% static 'assets/css/fontawesome.css' %}">
+  <link rel="stylesheet" href="{% static 'assets/css/templatemo-cyborg-gaming.css' %}">
+  <link rel="stylesheet" href="{% static 'assets/css/style.css' %}">
+  <style>
+    :root { 
+      --header-h: 72px;
+     }
+
+    .header-area.header-sticky { top: 0; z-index: 1030; }
+    .header-spacer { height: var(--header-h); }
+
+    /* 컨테이너 안에서 가득 차게(가로는 컨테이너 폭까지만) */
+    .question-stage {
+      min-height: calc(100vh - var(--header-h) - 88px); /* 헤더 + 상하 여백 고려 */
+      display: flex; align-items: flex-start; justify-content: center;
+      padding: 15px 0 24px;
+    }
+    .question-card {
+      width: 100%;                  /* 컨테이너 폭을 가득 */
+      background: #111;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,.08);
+      box-shadow: 0 10px 30px rgba(0,0,0,.35);
+    }
+    .question-title { 
+      font-size: clamp(1.35rem, 2vw, 1.9rem); line-height: 1.35; 
+    }
+    .question-actions .btn { 
+      padding: .9rem 1.25rem; font-size: 1.05rem; border-radius: 12px; 
+    }
+    .kbd {
+      background:#222;border:1px solid #333;border-bottom-width:3px;border-radius:6px;
+      padding:.2rem .4rem;font-weight:600;
+      font-family: ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Courier New",monospace;
+    }
+    .question-info-block {
+      margin-top: 300px;   
+    }
+
+    .poster { 
+      width:100%; aspect-ratio:2/3; object-fit:cover; border-radius:14px; background:#0d0d0d;
+     }
+    .item { 
+      background:#0f0f0f; border-radius:14px; border:1px solid rgba(255,255,255,.06);
+     }
+    .item:hover { 
+      transform: translateY(-2px); transition: transform .2s ease; 
+    }
+
+    .progress { 
+      height: 10px; background:#1c1c1c;
+     }
+    .progress-bar { 
+      background: linear-gradient(90deg,#ff4d4d,#ff9f43);
+     }
+
+    @media (max-width: 576px) {
+      .question-actions { gap: .6rem !important; }
+      .question-actions .btn { flex:1 1 auto; }
+    }
+  </style>
+</head>
+<body>
+
+{% include 'header.html' %}
+<div class="header-spacer"></div>
+
+<div class="container px-3 px-md-4"><!-- ✅ 기본 레이아웃 컨테이너 -->
+
+  {% if tmdb_error %}
+    <div class="alert alert-danger mt-3">{{ tmdb_error }}</div>
+  {% endif %}
+  <div class="question-info-block">
+
+  <!-- 진행 상태 + 리셋 -->
+  <div class="mt-3 mb-2 d-flex align-items-center justify-content-between">
+    <div class="text-muted small">
+      {% if question %}
+        질문 <strong>{{ question_idx|add:1 }}</strong> / {{ total_q }}
+      {% else %}
+        질문 완료
+      {% endif %}
+    </div>
+    <form method="post" class="m-0">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="reset">
+      <button class="btn btn-sm btn-outline-light">처음부터</button>
+    </form>
+  </div>
+
+  <!-- 진행 바 -->
+  <div class="progress mb-3">
+    <div class="progress-bar" style="width: {{ progress_pct }}%;"></div>
+  </div>
+
+</div> 
+
+  <!-- 질문 단계: 컨테이너 안에서 가득 차게 -->
+  {% if not show_results and question %}
+    <section class="question-stage">
+      <div class="question-card p-4 p-md-5">
+        <div class="d-flex align-items-start justify-content-between mb-3">
+          <h1 class="question-title mb-0">{{ question }}</h1>
+          <form method="post" class="ms-3">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="reset">
+            <button class="btn btn-sm btn-outline-secondary">새로 시작</button>
+          </form>
+        </div>
+
+        <p class="text-muted mb-4">
+          키보드 <span class="kbd">Y</span> / <span class="kbd">N</span> / <span class="kbd">Space</span> 로도 답할 수 있어요.
+        </p>
+
+        <form method="post" class="question-actions d-flex flex-wrap gap-2">
+          {% csrf_token %}
+          <input type="hidden" name="idx" value="{{ question_idx }}">
+          <button name="action" value="yes" class="btn btn-success">
+            <i class="fa fa-check me-1"></i> 예 (Y)
+          </button>
+          <button name="action" value="no" class="btn btn-danger">
+            <i class="fa fa-times me-1"></i> 아니오 (N)
+          </button>
+          <button name="action" value="skip" class="btn btn-secondary">
+            <i class="fa fa-question me-1"></i> 모르겠음 (Space)
+          </button>
+
+          <div class="ms-auto d-flex gap-2">
+            <button name="action" value="back" class="btn btn-outline-light">← 이전</button>
+          </div>
+        </form>
+      </div>
+    </section>
+  {% endif %}
+
+  <!-- 결과 단계: 컨테이너 폭 안에서 그리드 -->
+  {% if show_results or not question %}
+    <div class="row g-3 g-md-4 mt-2">
+      {% for m in movies %}
+        <div class="col-6 col-md-4 col-lg-3">
+          <a class="text-decoration-none text-light" href="{% url 'movie_detail' tmdb_id=m.id %}">
+            <div class="item p-2 h-100">
+              <img class="poster" src="{{ m.poster_url }}" alt="{{ m.title }}">
+              <h6 class="mt-2 text-truncate">{{ m.title }}</h6>
+              <div class="small text-muted">⭐ {{ m.vote|default:"0.0" }}{% if m.release_date %} · {{ m.release_date }}{% endif %}</div>
+            </div>
+          </a>
+        </div>
+      {% empty %}
+        <div class="col">
+          <div class="alert alert-secondary mb-0">
+            조건에 맞는 후보가 없어요. 「처음부터」를 눌러 다시 시도해 보세요.
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+
+    <div class="alert alert-success mt-4">
+      🎉 후보를 추렸어요! 마음에 드는 영화를 눌러 상세 페이지로 이동하세요.
+    </div>
+  {% endif %}
+
+</div>
+
+{% include 'footer.html' %}
+
+<script src="{% static 'vendor/bootstrap/js/bootstrap.min.js' %}"></script>
+<script>
+  // 헤더 높이를 spacer에 반영
+  (function() {
+    const header = document.querySelector('.header-area.header-sticky');
+    const spacer = document.querySelector('.header-spacer');
+    if (header && spacer) {
+      const setH = () => spacer.style.setProperty('--header-h', header.offsetHeight + 'px');
+      setH(); window.addEventListener('resize', setH);
+    }
+  })();
+
+  // 키보드 단축키: Y / N / Space
+  (function () {
+    const stage = document.querySelector('.question-stage');
+    if (!stage) return;
+    document.addEventListener('keydown', function(e) {
+      const form = stage.querySelector('form.question-actions');
+      if (!form) return;
+      if (e.key === 'y' || e.key === 'Y') { e.preventDefault(); form.querySelector('button[name="action"][value="yes"]').click(); }
+      else if (e.key === 'n' || e.key === 'N') { e.preventDefault(); form.querySelector('button[name="action"][value="no"]').click(); }
+      else if (e.code === 'Space') { e.preventDefault(); form.querySelector('button[name="action"][value="skip"]').click(); }
+    });
+  })();
+</script>
+</body>
+</html>

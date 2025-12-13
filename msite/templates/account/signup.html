@@ -1,0 +1,104 @@
+{% load static %}
+{% load i18n %}
+{% load account %}
+
+{% include 'header.html' %}
+
+<link rel="stylesheet" href="{% static 'assets/css/login.css' %}">
+
+<div class="container">
+  <div class="row">
+    <div class="col-lg-12">
+      <div class="page-content">
+
+        <!-- 상단 배너 -->
+        <div class="main-banner">
+          <div class="row justify-content-center">
+            <div class="col-lg-6 col-md-8">
+              <div class="header-text text-center">
+                <h6>Join CineWorld</h6>
+                <h4><em>Create</em> Your Account</h4>
+                <p class="text-light">
+                  이메일로 CineWorld 계정을 만들고 나만의 영화 라이브러리를 관리해 보세요.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 회원가입 카드 -->
+        <div class="row justify-content-center mt-4">
+          <div class="col-lg-5 col-md-7 d-flex justify-content-center">
+            <div class="form-container">
+              {% if user.is_authenticated %}
+                <div class="title">이미 로그인됨</div>
+                <div class="form" style="margin-top:1rem;">
+                  <p class="mb-3">
+                    <strong>{{ user.username }}</strong> 님은 이미 로그인되어 있습니다.
+                  </p>
+                  <a href="{% url 'index' %}" class="sign mb-2" style="display:block; text-decoration:none;">
+                    홈으로 가기
+                  </a>
+                  <a href="{% url 'account_logout' %}" class="sign" style="display:block; text-decoration:none; background-color:#374151; color:#f9fafb;">
+                    로그아웃 후 다른 계정으로 가입
+                  </a>
+                </div>
+
+              {% else %}
+                <div class="title">회원가입</div>
+
+                <form method="post" action="{% url 'account_signup' %}" class="form">
+                  {% csrf_token %}
+                  {{ form.non_field_errors }}
+
+                  {% for field in form %}
+                    <div class="input-group">
+                      <label class="form-label" for="{{ field.id_for_label }}">
+                        {{ field.label }}
+                        {% if field.field.required %}
+                          <span class="text-danger">*</span>
+                        {% endif %}
+                      </label>
+                      {{ field }}
+                      {% if field.help_text %}
+                        <div class="form-text text-muted small">
+                          {{ field.help_text|safe }}
+                        </div>
+                      {% endif %}
+                      {{ field.errors }}
+                    </div>
+                  {% endfor %}
+
+                  {% if redirect_field_value %}
+                    <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}">
+                  {% endif %}
+
+                  <button type="submit" class="sign" style="margin-top:1rem;">
+                    이메일로 회원가입 완료
+                  </button>
+                </form>
+
+                <div class="signup">
+                  <span>이미 계정이 있으신가요?</span><br>
+                  <a href="{% url 'account_login' %}">로그인 하러 가기</a>
+                </div>
+
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+{% include 'footer.html' %}
+
+<script src="{% static 'vendor/jquery/jquery.min.js' %}"></script>
+<script src="{% static 'vendor/bootstrap/js/bootstrap.min.js' %}"></script>
+<script src="{% static 'assets/js/isotope.min.js' %}"></script>
+<script src="{% static 'assets/js/owl-carousel.js' %}"></script>
+<script src="{% static 'assets/js/tabs.js' %}"></script>
+<script src="{% static 'assets/js/popup.js' %}"></script>
+<script src="{% static 'assets/js/custom.js' %}"></script>

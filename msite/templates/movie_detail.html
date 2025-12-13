@@ -1,0 +1,388 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ movie.title|default:"영화 상세" }} – CineWorld</title>
+
+  <!-- Vendor / Theme CSS -->
+  <link rel="stylesheet" href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}">
+  <link rel="stylesheet" href="{% static 'assets/css/fontawesome.css' %}">
+  <link rel="stylesheet" href="{% static 'assets/css/owl.css' %}">
+  <link rel="stylesheet" href="{% static 'assets/css/templatemo-cyborg-gaming.css' %}">
+  <link rel="stylesheet" href="{% static 'assets/css/style.css' %}">
+
+  <style>
+    .header-area.header-sticky { position: sticky; top: 0; z-index: 1030; }
+    .header-spacer { height: var(--header-h, 72px); }
+
+    .container {
+      overflow-x: hidden; /* 전체 페이지가 옆으로 밀려나지 않도록 보호 */
+    }
+
+    .poster {
+      border-radius: 16px;
+      width: 100%;
+      object-fit: cover;
+      background: #111;
+    }
+
+    /* 백드롭 삐져나오는 문제 해결 */
+    .backdrop-wrapper {
+      border-radius: 16px;
+      overflow: hidden;          /* 튀어나오는 부분 잘라냄 */
+      width: 100%;
+    }
+
+    .backdrop {
+      width: 100%;
+      max-width: 100%;
+      height: auto;
+      object-fit: cover;
+      display: block;
+      background: #0b0b0b;
+    }
+
+    .chip {
+      display:inline-block;
+      padding:.25rem .6rem;
+      border-radius:999px;
+      background:#222;
+      font-size:.85rem;
+      color:#fff;
+    }
+
+    .label-white { color:#fff !important; }
+
+    /* 댓글 textarea를 카드 안에서 가로 꽉 차게 + 보기 좋게 */
+    .comment-textarea textarea {
+      width: 100%;
+      min-height: 130px;
+      box-sizing: border-box;
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      border: 1px solid #555;
+      background: #000;
+      color: #fff;
+      resize: vertical;
+      font-size: 0.95rem;
+    }
+
+    /* =======================
+       별 5개로 10점 표현 (반별 단위)
+       ======================= */
+    .star-visual {
+      position: relative;
+      display: inline-block;
+      font-size: 1.8rem;
+      line-height: 1;
+      cursor: pointer;
+    }
+    .star-visual .stars-bg {
+      color: #444;          /* 빈 별 */
+    }
+    .star-visual .stars-fill {
+      position: absolute;
+      top: 0;
+      left: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      color: #ffc107;       /* 채워진 별 */
+      width: 0;             /* JS로 0~100% 채움 */
+      pointer-events: none; /* 클릭 이벤트는 부모에서만 처리 */
+    }
+  </style>
+</head>
+
+<body>
+
+{% include 'header.html' %}
+<div class="header-spacer"></div>
+
+<div class="container">
+
+  {% if tmdb_error %}
+    <div class="alert alert-danger mt-3">{{ tmdb_error }}</div>
+  {% endif %}
+
+  {% if movie %}
+  <div class="row g-4 mt-2">
+
+    <!-- 포스터 -->
+    <div class="col-12 col-md-4">
+      <img src="{{ movie.poster_url|default:'/static/assets/images/default-movie.jpg' }}"
+           class="poster"
+           alt="{{ movie.title }}"
+           loading="lazy">
+    </div>
+
+    <!-- 기본 정보 -->
+    <div class="col-12 col-md-8 text-light">
+
+      <h2 class="fw-bold mb-1">{{ movie.title }}</h2>
+
+      <div class="text-muted mb-3">
+        {% if movie.release_date %}개봉: {{ movie.release_date }} · {% endif %}
+        ⭐ {{ movie.vote|default:"0.0" }}
+        {% if rating_count > 0 %}
+          · ⭐ 사용자 평점: {{ avg_rating|floatformat:1 }} / 10 ({{ rating_count }}명)
+        {% endif %}
+      </div>
+
+      {% if movie.genres %}
+        <div class="mb-2">
+          {% for g in movie.genres %}
+            <span class="chip me-1 mb-1">{{ g }}</span>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      {% if movie.runtime %}
+        <div class="mb-2">
+          <span class="label-white">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-clock" viewBox="0 0 16 16">
+              <path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71z"/>
+              <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0"/>
+            </svg>
+          </span>
+          {{ movie.runtime }}분
+        </div>
+      {% endif %}
+
+      {% if movie.director %}
+        <div class="mb-2">
+          <span class="label-white">감독:</span> 
+          <strong>{{ movie.director }}</strong>
+        </div>
+      {% endif %}
+
+      {% if movie.cast %}
+        <div class="mb-3">
+          <span class="label-white">출연:</span>
+          <div class="mt-1">
+            {% for c in movie.cast %}
+              <span class="chip me-1 mb-1">
+                {{ c.name }}{% if c.character %} ({{ c.character }}){% endif %}
+              </span>
+            {% endfor %}
+          </div>
+        </div>
+      {% endif %}
+
+      {% if movie.overview %}
+        <p class="lead text-light">{{ movie.overview }}</p>
+      {% endif %}
+
+      <!-- 즐겨찾기 + 목록/트레일러 -->
+      <div class="d-flex gap-2 mt-3 flex-wrap">
+        {% if movie.trailer_url %}
+          <a class="btn btn-danger" href="{{ movie.trailer_url }}" target="_blank" rel="noopener">
+            <i class="fa-brands fa-youtube me-1"></i> 트레일러 보기
+          </a>
+        {% endif %}
+
+        <a class="btn btn-outline-secondary" href="{% url 'movie_list' %}">← 목록으로</a>
+
+        {% if user.is_authenticated %}
+          <form method="post" action="{% url 'favorite_toggle' movie.id %}" class="d-inline">
+            {% csrf_token %}
+            {% if is_favorited %}
+              <button type="submit" class="btn btn-warning">★ 즐겨찾기 해제</button>
+            {% else %}
+              <button type="submit" class="btn btn-outline-warning">☆ 즐겨찾기 추가</button>
+            {% endif %}
+          </form>
+        {% else %}
+          <a href="{% url 'account_login' %}?next={{ request.path }}" class="btn btn-outline-warning">
+            ☆ 로그인하고 즐겨찾기
+          </a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- 백드롭 -->
+  {% if movie.backdrop_url %}
+  <div class="row mt-4">
+    <div class="col">
+      <div class="backdrop-wrapper">
+        <img src="{{ movie.backdrop_url }}" class="backdrop" alt="backdrop" loading="lazy">
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- 댓글 영역 -->
+  <div class="row mt-5 mb-5">
+    <div class="col-12 col-lg-8 mx-auto">
+
+      <h3 class="text-light mb-3">댓글</h3>
+
+      <div class="mb-4">
+        {% if comments %}
+          {% for c in comments %}
+            <div class="card bg-dark text-light mb-2">
+              <div class="card-body">
+
+                <!-- 작성자 + 댓글별 별점 + 작성 시간/삭제 -->
+                <div class="d-flex justify-content-between">
+                  <div>
+                    <strong>{{ c.user.username }}</strong>
+
+                    {% if c.rating %}
+                      <span class="badge bg-warning text-dark ms-2">
+                        ★ {{ c.rating }} / 10
+                      </span>
+                    {% endif %}
+                  </div>
+
+                  <div class="text-muted" style="font-size: 0.8rem;">
+                    {{ c.created_at|date:"Y-m-d H:i" }}
+
+                    {% if c.user == user %}
+                      <a href="{% url 'comment_delete' c.id %}"
+                         class="text-danger ms-2"
+                         onclick="return confirm('정말 삭제할까요?');"
+                         style="font-size: 0.8rem;">
+                        삭제
+                      </a>
+                    {% endif %}
+                  </div>
+                </div>
+
+                <!-- 댓글 내용 -->
+                <div class="mt-2">
+                  {{ c.content|linebreaksbr }}
+                </div>
+
+                <!-- 댓글 이미지 -->
+                {% if c.image %}
+                  <div class="mt-2">
+                    <img src="{{ c.image.url }}"
+                         alt="댓글 이미지"
+                         style="max-width: 300px; height: auto; border-radius: 8px;">
+                  </div>
+                {% endif %}
+
+              </div>
+            </div>
+          {% endfor %}
+        {% else %}
+          <p class="text-muted">아직 댓글이 없습니다. 첫 댓글을 작성해 보세요!</p>
+        {% endif %}
+      </div>
+
+      {% if user.is_authenticated %}
+        <!-- 댓글 작성 폼 (⭐별점 → 💬댓글 → 📎이미지) -->
+        <form method="post"
+              enctype="multipart/form-data"
+              class="card bg-dark text-light">
+          {% csrf_token %}
+          <div class="card-body">
+
+            <!-- ⭐ 별점 (5개 별, 10점 만점 / 반별 단위) -->
+            <div class="mb-3">
+              <label class="form-label text-light mb-1">별점</label>
+
+              <!-- 클릭 가능한 별 영역 -->
+              <div class="star-visual" id="ratingStars">
+                <div class="stars-bg">★★★★★</div>
+                <div class="stars-fill">★★★★★</div>
+              </div>
+
+              <!-- 실제 서버로 보내질 값 (1~10) -->
+              <input type="hidden" name="rating" id="ratingInput">
+
+              <div class="form-text text-muted" style="font-size: 0.8rem;">
+                (별을 클릭해서 별점 선택 — 반별(1점) 단위로 조절됩니다)
+              </div>
+            </div>
+
+            <!-- 💬 댓글 내용 (가로 꽉 차게) -->
+            <div class="mb-3 comment-textarea">
+              {{ comment_form.content }}
+            </div>
+
+            <!-- 📎 이미지 업로드 -->
+            <div class="mb-2">
+              {{ comment_form.image }}
+            </div>
+
+            <div class="text-end mt-2">
+              <button type="submit" class="btn btn-primary btn-sm">댓글 작성</button>
+            </div>
+          </div>
+        </form>
+      {% else %}
+        <div class="alert alert-secondary">
+          댓글을 작성하려면 
+          <a href="{% url 'account_login' %}?next={{ request.path }}"
+             style="color:#000; font-weight:600;">
+            로그인
+          </a>
+          해주세요.
+        </div>
+      {% endif %}
+
+    </div>
+  </div>
+
+  {% else %}
+    <div class="alert alert-secondary mt-4">영화 정보를 불러오지 못했습니다.</div>
+  {% endif %}
+
+</div>
+
+{% include 'footer.html' %}
+
+<script src="{% static 'vendor/jquery/jquery.min.js' %}"></script>
+<script src="{% static 'vendor/bootstrap/js/bootstrap.min.js' %}"></script>
+<script>
+  (function() {
+    const header = document.querySelector('.header-area.header-sticky');
+    const spacer = document.querySelector('.header-spacer');
+    if (header && spacer) {
+      spacer.style.setProperty('--header-h', header.offsetHeight + 'px');
+      window.addEventListener('resize', () => {
+        spacer.style.setProperty('--header-h', header.offsetHeight + 'px');
+      });
+    }
+
+    // ⭐ 별 클릭으로 1~10점 선택 (5개 별, 반별 단위)
+    const stars = document.getElementById('ratingStars');
+    const hiddenInput = document.getElementById('ratingInput');
+
+    if (stars && hiddenInput) {
+      const fillEl = stars.querySelector('.stars-fill');
+
+      const setRating = (rating) => {
+        // 1~10 범위로 제한
+        rating = Math.max(1, Math.min(10, rating));
+        const percent = rating * 10;       // 1점 = 10%, 10점 = 100%
+        fillEl.style.width = percent + '%';
+        hiddenInput.value = rating;
+      };
+
+      const handleClick = (event) => {
+        const rect = stars.getBoundingClientRect();
+        const x = event.clientX - rect.left;     // 클릭 위치
+        let ratio = x / rect.width;             // 0.0 ~ 1.0
+        if (ratio < 0) ratio = 0;
+        if (ratio > 1) ratio = 1;
+        let rating = Math.round(ratio * 10);    // 0~10 → 반별 단위
+        if (rating < 1) rating = 1;             // 최소 1점
+        setRating(rating);
+      };
+
+      stars.addEventListener('click', handleClick);
+
+      // 초기값: 아직 선택 안 한 상태 (별 비워두고 값 없음)
+      fillEl.style.width = '0';
+      hiddenInput.value = '';
+    }
+  })();
+</script>
+
+</body>
+</html>
