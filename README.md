@@ -79,7 +79,7 @@ python manage.py migrate
 # Start development server
 python manage.py runserver
 
-Deployment Notes
+# Deployment Notes
 
 Designed for deployment on AWS EC2
 
@@ -89,7 +89,7 @@ Production settings use DEBUG=False and restricted ALLOWED_HOSTS
 
 Suitable for further extension with CI/CD or load balancing
 
-Project Motivation
+# Project Motivation
 
 This project focuses on:
 
@@ -99,7 +99,7 @@ Operating a backend service from a customer and service perspective
 
 Gaining practical experience relevant to AWS Professional Services and cloud engineering roles
 
-Author
+# Author
 
 Chan Min Mun
 
