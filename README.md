@@ -75,7 +75,10 @@ python manage.py migrate
 
 # Start development server
 python manage.py runserver
+
+
 Deployment Notes
+
 Designed for deployment on AWS EC2
 
 Static and media files can be served via Amazon S3
@@ -85,6 +88,7 @@ Production settings use DEBUG=False and restricted ALLOWED_HOSTS
 Suitable for further extension with CI/CD pipelines or load balancing
 
 Project Motivation
+
 This project focuses on:
 
 Understanding cloud-based application architecture
@@ -94,5 +98,6 @@ Operating a backend service from a customer and service perspective
 Gaining practical experience relevant to AWS Professional Services and cloud engineering roles
 
 Author
+
 Chan Min Mun
 GitHub: https://github.com/chanminmun
