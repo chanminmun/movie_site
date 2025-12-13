@@ -61,7 +61,7 @@ AWS_S3_REGION_NAME=
 TMDB_BEARER_TOKEN=
 KOBIS_API_KEY=
 Local Development
-bash
+bash'''
 코드 복사
 # Create virtual environment
 python -m venv venv
