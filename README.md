@@ -36,7 +36,7 @@ The project was built to gain hands-on experience with **AWS cloud infrastructur
 - Environment variables used for all secrets and credentials
 - Separation of development and production configurations
 
-Security & Configuration
+## Security & Configuration
 
 No secrets or credentials are stored in the repository
 
@@ -66,20 +66,20 @@ TMDB_BEARER_TOKEN=
 KOBIS_API_KEY=
 
 ⚙️ Local Development
-# Create virtual environment
+## Create virtual environment
 python -m venv venv
 source venv/bin/activate
 
-# Install dependencies
+## Install dependencies
 pip install -r requirements.txt
 
-# Run migrations
+## Run migrations
 python manage.py migrate
 
-# Start development server
+## Start development server
 python manage.py runserver
 
-# Deployment Notes
+## Deployment Notes
 
 Designed for deployment on AWS EC2
 
@@ -89,7 +89,7 @@ Production settings use DEBUG=False and restricted ALLOWED_HOSTS
 
 Suitable for further extension with CI/CD or load balancing
 
-# Project Motivation
+## Project Motivation
 
 This project focuses on:
 
@@ -99,7 +99,7 @@ Operating a backend service from a customer and service perspective
 
 Gaining practical experience relevant to AWS Professional Services and cloud engineering roles
 
-# Author
+## Author
 
 Chan Min Mun
 
