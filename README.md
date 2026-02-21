@@ -88,6 +88,7 @@ AWS_S3_REGION_NAME=
 
 TMDB_BEARER_TOKEN=
 KOBIS_API_KEY=
+```
 ---
 ## Limitations & Future Improvements
 
@@ -106,6 +107,7 @@ Migrate deployment to a container-based architecture (ECS)
 Add CloudWatch-based monitoring and alerting
 
 ## Local Development
+```
 # Create virtual environment
 python -m venv venv
 source venv/bin/activate
@@ -118,7 +120,7 @@ python manage.py migrate
 
 # Start development server
 python manage.py runserver
-
+```
 ## Deployment Notes
 
 Designed for deployment on AWS EC2
@@ -139,7 +141,7 @@ Operating a backend service from an engineering and operational perspective
 
 Building practical experience relevant to cloud infrastructure and backend engineering roles
 
-##👤 Author
+## Author
 
 Chan Min Mun
 GitHub: https://github.com/chanminmun
