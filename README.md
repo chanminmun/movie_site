@@ -88,3 +88,58 @@ AWS_S3_REGION_NAME=
 
 TMDB_BEARER_TOKEN=
 KOBIS_API_KEY=
+---
+## Limitations & Future Improvements
+
+The application currently runs on a single EC2 instance, which is a potential single point of failure
+
+External API availability and rate limits may affect movie data delivery
+
+## Possible improvements:
+
+Introduce caching (Redis) for frequently accessed movie details
+
+Add load balancing and auto scaling for higher availability
+
+Migrate deployment to a container-based architecture (ECS)
+
+Add CloudWatch-based monitoring and alerting
+
+## Local Development
+# Create virtual environment
+python -m venv venv
+source venv/bin/activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Run migrations
+python manage.py migrate
+
+# Start development server
+python manage.py runserver
+
+## Deployment Notes
+
+Designed for deployment on AWS EC2
+
+Media files are stored separately in S3 to reduce server storage dependency
+
+Architecture prioritizes clarity, separation of concerns, and operational simplicity
+
+Suitable for further extension with CI/CD, monitoring, and containerization
+
+## Project Motivation
+
+This project focuses on:
+
+Understanding cloud-based application architecture
+
+Operating a backend service from an engineering and operational perspective
+
+Building practical experience relevant to cloud infrastructure and backend engineering roles
+
+##👤 Author
+
+Chan Min Mun
+GitHub: https://github.com/chanminmun
